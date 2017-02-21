@@ -11,7 +11,7 @@ namespace ToDoList
     private int _categoryId;
     private string _dueDate;
 
-    public Task(string Description, int CategoryId, int Id = 0, string DueDate)
+    public Task(string Description, int CategoryId, string DueDate, int Id = 0)
     {
       _id = Id;
       _description = Description;
@@ -75,7 +75,7 @@ namespace ToDoList
       SqlConnection conn = DB.Connection();
       conn.Open();
 
-      SqlCommand cmd = new SqlCommand("SELECT * FROM tasks;", conn);
+      SqlCommand cmd = new SqlCommand("SELECT * FROM tasks ORDER BY duedate ASC;", conn);
       SqlDataReader rdr = cmd.ExecuteReader();
 
       while(rdr.Read())
@@ -84,7 +84,7 @@ namespace ToDoList
         string taskDescription = rdr.GetString(1);
         int taskCategoryId = rdr.GetInt32(2);
         string taskDueDate = rdr.GetString(3);
-        Task newTask = new Task(taskDescription, taskCategoryId, taskId, taskDueDate);
+        Task newTask = new Task(taskDescription, taskCategoryId, taskDueDate, taskId);
         allTasks.Add(newTask);
       }
 
@@ -105,7 +105,7 @@ namespace ToDoList
       SqlConnection conn = DB.Connection();
       conn.Open();
 
-      SqlCommand cmd = new SqlCommand("INSERT INTO tasks (description, category_id) OUTPUT INSERTED.id VALUES (@TaskDescription, @TaskCategoryId);", conn);
+      SqlCommand cmd = new SqlCommand("INSERT INTO tasks (description, category_id, duedate) OUTPUT INSERTED.id VALUES (@TaskDescription, @TaskCategoryId, @TaskDueDate);", conn);
 
       SqlParameter descriptionParameter = new SqlParameter();
       descriptionParameter.ParameterName = "@TaskDescription";
@@ -115,8 +115,13 @@ namespace ToDoList
       categoryIdParameter.ParameterName = "@TaskCategoryId";
       categoryIdParameter.Value = this.GetCategoryId();
 
+      SqlParameter taskDueDateParameter = new SqlParameter();
+      taskDueDateParameter.ParameterName = "@TaskDueDate";
+      taskDueDateParameter.Value = this.GetDueDate();
+
       cmd.Parameters.Add(descriptionParameter);
       cmd.Parameters.Add(categoryIdParameter);
+      cmd.Parameters.Add(taskDueDateParameter);
       SqlDataReader rdr = cmd.ExecuteReader();
 
       while(rdr.Read())
@@ -156,7 +161,7 @@ namespace ToDoList
         foundTaskDescription = rdr.GetString(1);
         foundTaskDueDate = rdr.GetString(3);
       }
-      Task foundTask = new Task(foundTaskDescription, foundCategoryId, foundTaskId, foundTaskDueDate);
+      Task foundTask = new Task(foundTaskDescription, foundCategoryId, foundTaskDueDate, foundTaskId);
 
       if (rdr != null)
       {

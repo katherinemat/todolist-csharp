@@ -146,7 +146,7 @@ namespace ToDoList
       SqlConnection conn = DB.Connection();
       conn.Open();
 
-      SqlCommand cmd = new SqlCommand("SELECT * FROM tasks WHERE category_id = @CategoryId;", conn);
+      SqlCommand cmd = new SqlCommand("SELECT * FROM tasks WHERE category_id = @CategoryId ORDER BY duedate ASC;", conn);
       SqlParameter categoryIdParameter = new SqlParameter();
       categoryIdParameter.ParameterName = "@CategoryId";
       categoryIdParameter.Value = this.GetId();
@@ -160,7 +160,7 @@ namespace ToDoList
         string taskDescription = rdr.GetString(1);
         int taskCategoryId = rdr.GetInt32(2);
         string taskDueDate = rdr.GetString(3);
-        Task newTask = new Task(taskDescription, taskCategoryId, taskId, taskDueDate);
+        Task newTask = new Task(taskDescription, taskCategoryId, taskDueDate, taskId);
         tasks.Add(newTask);
       }
       if (rdr != null)
